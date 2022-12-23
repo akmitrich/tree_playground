@@ -1,4 +1,4 @@
-pub mod avl;
+pub mod bst;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
