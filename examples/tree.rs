@@ -1,12 +1,17 @@
+use std::path::Path;
+
 use tree_playground::bst::BstSet;
 
 fn main() {
-    let mut tree = BstSet::default();
-    println!("Empty: {tree:?}");
-    tree.insert(42);
-    tree.insert(15);
-    tree.insert(23);
-    tree.insert(55);
-    println!("Final: {tree:#?}");
-    println!("Sorted: {:?}", tree.iter().collect::<Vec<&i64>>());
+    let path = Path::new("..");
+    tree_playground::tester::run_test(path.join("sorting-tests").join("0.random"), |data| {
+        let mut tree = BstSet::default();
+        for number in data[1].split(' ').filter_map(|x| x.parse::<i64>().ok()) {
+            tree.insert(number);
+        }
+        tree.iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(" ")
+    })
 }
