@@ -1,5 +1,7 @@
 use std::{cmp::Ordering, mem::replace};
 
+use crate::Tree;
+
 type BSTree = Option<Box<BstNode>>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -24,8 +26,8 @@ pub struct BstSet {
     root: BSTree,
 }
 
-impl BstSet {
-    pub fn insert(&mut self, value: i64) -> bool {
+impl Tree for BstSet {
+    fn insert(&mut self, value: i64) -> bool {
         let mut current = &mut self.root;
         while let Some(node) = current {
             match node.value.cmp(&value) {
@@ -38,7 +40,7 @@ impl BstSet {
         true
     }
 
-    pub fn search(&self, value: i64) -> bool {
+    fn search(&self, value: i64) -> bool {
         let mut current = &self.root;
         while let Some(node) = current {
             match node.value.cmp(&value) {
@@ -50,7 +52,7 @@ impl BstSet {
         false
     }
 
-    pub fn remove(&mut self, value: i64) -> Option<i64> {
+    fn remove(&mut self, value: i64) -> Option<i64> {
         fn find_target<'a>(
             value: i64,
             start: &'a mut BSTree,
