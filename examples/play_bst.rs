@@ -6,10 +6,12 @@ fn main() {
     println!("{}", "=".repeat(80));
     println!("START PLAY WITH BINARY SEARCH TREE");
     for n in [1000_usize, 10000, 100000, 1000000, 10000000] {
-        play_random_numbers(BstSet::default(), n);
+        let mut random = BstSet::default();
+        play_random_numbers(&mut random, n);
         if n < 100001 {
             println!();
-            play_sorted_numbers(BstSet::default(), n)
+            let mut sorted = BstSet::default();
+            play_sorted_numbers(&mut sorted, n);
         }
         println!("{}", "-".repeat(80));
     }

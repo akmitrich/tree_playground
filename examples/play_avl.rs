@@ -1,23 +1,32 @@
 use std::{path::Path, time::Instant};
 
-use tree_playground::avl::AvlSet;
+use tree_playground::{
+    avl::AvlSet, play_random_numbers, play_sorted_numbers, sorted_percent, Tree,
+};
 
 fn main() {
-    let mut tree = AvlSet::default();
-    tree.insert(2);
-    tree.insert(5);
-    tree.insert(9);
-    tree.insert(12);
-    tree.insert(44);
-    tree.insert(52);
-    tree.insert(68);
-    println!("{:#?}", tree);
-    let path = Path::new("..");
-    perform_sort_test(path.join("sorting-tests").join("0.random"));
-    perform_sort_test(path.join("sorting-tests").join("2.sorted"));
+    println!("{}", "=".repeat(80));
+    println!("START PLAY WITH AVL TREE");
+    for n in [1000_usize, 10000, 100000, 1000000, 10000000] {
+        let mut random = AvlSet::default();
+        play_random_numbers(&mut random, n);
+        println!(
+            "Tree is {}% sorted.",
+            sorted_percent(random.iter().copied())
+        );
+        println!();
+        let mut sorted = AvlSet::default();
+        play_sorted_numbers(&mut sorted, n);
+        println!(
+            "Tree is {}% sorted.",
+            sorted_percent(sorted.iter().copied())
+        );
+
+        println!("{}", "-".repeat(80));
+    }
 }
 
-fn perform_sort_test(path: impl AsRef<Path>) {
+fn _perform_sort_test(path: impl AsRef<Path>) {
     tree_playground::tester::run_test(path, |data| {
         let mut tree = AvlSet::default();
         let start = Instant::now();
