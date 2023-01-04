@@ -1,13 +1,14 @@
 use std::cmp::Ordering;
 
 use rand::Rng;
-pub type Treap = Option<Box<Node>>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Node {
+use crate::Tree;
+type Treap = Option<Box<Node>>;
+
+#[derive(Debug, Clone, PartialEq)]
+struct Node {
     value: i64,
     priority: usize,
-    size: usize,
     left: Treap,
     right: Treap,
 }
@@ -18,7 +19,6 @@ impl Node {
         Self {
             value,
             priority: rng.gen(),
-            size: 1,
             left: None,
             right: None,
         }
@@ -57,14 +57,13 @@ fn split(t: Treap, value: i64) -> (Treap, Treap) {
     }
 }
 
-pub fn insert(value: i64, t: Treap) -> Treap {
+fn insert(value: i64, t: Treap) -> Treap {
     let node = Some(Box::new(Node::new(value)));
     let (left, right) = split(t, value);
-    let add_node_to_left = merge(left, node);
-    merge(add_node_to_left, right)
+    merge(merge(left, node), right)
 }
 
-pub fn remove(value: i64, t: Treap) -> Treap {
+fn remove(value: i64, t: Treap) -> Treap {
     let mut root = t?;
     match root.value.cmp(&value) {
         Ordering::Less => root.right = remove(value, root.right),
@@ -72,4 +71,79 @@ pub fn remove(value: i64, t: Treap) -> Treap {
         Ordering::Greater => root.left = remove(value, root.left),
     }
     Some(root)
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct TreapSet {
+    root: Treap,
+}
+
+impl Tree for TreapSet {
+    fn insert(&mut self, value: i64) -> bool {
+        self.root = insert(value, self.root.take());
+        true
+    }
+
+    fn remove(&mut self, value: i64) -> Option<i64> {
+        self.root = remove(value, self.root.take());
+        Some(value)
+    }
+
+    fn search(&self, value: i64) -> bool {
+        let mut current = &self.root;
+        while let Some(node) = current {
+            match node.value.cmp(&value) {
+                Ordering::Less => current = &node.right,
+                Ordering::Equal => return true,
+                Ordering::Greater => current = &node.left,
+            }
+        }
+        false
+    }
+}
+
+impl TreapSet {
+    pub fn iter(&self) -> TreapIter {
+        TreapIter {
+            prev_nodes: vec![],
+            current: &self.root,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct TreapIter<'a> {
+    prev_nodes: Vec<&'a Node>,
+    current: &'a Treap,
+}
+
+impl<'a> Iterator for TreapIter<'a> {
+    type Item = &'a i64;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match *self.current {
+                None => match self.prev_nodes.pop() {
+                    Some(prev_node) => {
+                        self.current = &prev_node.right;
+                        return Some(&prev_node.value);
+                    }
+                    None => return None,
+                },
+                Some(ref node) => {
+                    if node.left.is_some() {
+                        self.prev_nodes.push(node);
+                        self.current = &node.left;
+                        continue;
+                    }
+                    if node.right.is_some() {
+                        self.current = &node.right;
+                        return Some(&node.value);
+                    }
+                    self.current = &None;
+                    return Some(&node.value);
+                }
+            }
+        }
+    }
 }
